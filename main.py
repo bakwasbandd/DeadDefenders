@@ -13,6 +13,18 @@ clock = pygame.time.Clock()
 background = pygame.image.load("images\homepage/background.PNG")
 background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 
+# exit bg
+exit_background = pygame.image.load("images/homepage/exit.PNG") 
+exit_background = pygame.transform.scale(exit_background, (WIDTH, HEIGHT))
+
+def exit_sequence():
+    screen.blit(exit_background, (0, 0))
+    pygame.display.update()
+    # Delay to show the exit screen before quitting
+    pygame.time.delay(3000) 
+    pygame.quit()
+    sys.exit()
+
 class Button:
     def __init__(self, image_path, x, y, scale=1, angle=0):
         self.original = pygame.image.load(image_path).convert_alpha()
@@ -104,9 +116,8 @@ while running:
                 print("HELP clicked")
 
             elif quit_btn.is_clicked(mouse_pos):
-                # need to add a exit screen here
-                pygame.quit()
-                sys.exit()
+                running = False
+                exit_sequence()
 
     pygame.display.update()
     clock.tick(60)
