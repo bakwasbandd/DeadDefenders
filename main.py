@@ -104,6 +104,7 @@ while running:
                 print("HELP clicked")
 
             elif quit_btn.is_clicked(mouse_pos):
+                # need to add a exit screen here
                 pygame.quit()
                 sys.exit()
 
