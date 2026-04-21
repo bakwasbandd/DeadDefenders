@@ -5,60 +5,97 @@ import sys
 pygame.init()
 WIDTH, HEIGHT = 1000, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("🧟‍♀️ Dead Defenders 🧟‍♀️")
+pygame.display.set_caption("Dead Defenders")
 
-# --- Load Images ---
+clock = pygame.time.Clock()
+
+# --- Load Background ---
 background = pygame.image.load("images\homepage/background.PNG")
 background = pygame.transform.scale(background, (WIDTH, HEIGHT))
-
-# start_img = pygame.image.load("assets/start_btn.png").convert_alpha()
-# quit_img = pygame.image.load("assets/quit_btn.png").convert_alpha()
-
-# # Resize buttons (adjust if needed)
-# start_img = pygame.transform.scale(start_img, (200, 80))
-# quit_img = pygame.transform.scale(quit_img, (200, 80))
 
 
 # --- Button Class ---
 class Button:
-    def __init__(self, image, x, y):
-        self.image = image
+    def __init__(self, image_path, x, y, scale=1):
+        self.original = pygame.image.load(image_path).convert_alpha()
+
+        w = self.original.get_width()
+        h = self.original.get_height()
+
+        self.image = pygame.transform.scale(
+            self.original, (int(w * scale), int(h * scale))
+        )
         self.rect = self.image.get_rect(topleft=(x, y))
+
+        self.hovered = False
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
 
-    def is_clicked(self, pos):
-        return self.rect.collidepoint(pos)
+    def update(self, mouse_pos):
+        if self.rect.collidepoint(mouse_pos):
+            if not self.hovered:
+                self.hovered = True
+                self.image = pygame.transform.scale(
+                    self.original,
+                    (int(self.rect.width * 1.1), int(self.rect.height * 1.1))
+                )
+                self.rect = self.image.get_rect(center=self.rect.center)
+        else:
+            if self.hovered:
+                self.hovered = False
+                self.image = pygame.transform.scale(
+                    self.original,
+                    (int(self.rect.width / 1.1), int(self.rect.height / 1.1))
+                )
+                self.rect = self.image.get_rect(center=self.rect.center)
+
+    def is_clicked(self, mouse_pos):
+        return self.rect.collidepoint(mouse_pos)
 
 
-# # --- Create Buttons (RIGHT SIDE) ---
-# start_button = Button(start_img, WIDTH - 250, 200)
-# quit_button = Button(quit_img, WIDTH - 250, 320)
+# --- Create Buttons (RIGHT SIDE STACK) ---
+start_btn = Button("images\homepage/start.PNG", WIDTH - 450, 120, 0.2)
+about_btn = Button("images\homepage/about.PNG", WIDTH - 450, 220, 0.1)
+help_btn = Button("images\homepage/help.PNG", WIDTH - 370, 280, 0.07)
+quit_btn = Button("images\homepage/quit.PNG", WIDTH - 370, 370, 0.09)
+
+buttons = [start_btn, about_btn, help_btn, quit_btn]
 
 
 # --- Main Loop ---
 running = True
 while running:
+    mouse_pos = pygame.mouse.get_pos()
+
+    # Draw background
     screen.blit(background, (0, 0))
 
-    # # Draw buttons
-    # start_button.draw(screen)
-    # quit_button.draw(screen)
+    # Update + Draw buttons
+    for btn in buttons:
+        btn.update(mouse_pos)
+        btn.draw(screen)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-        # if event.type == pygame.MOUSEBUTTONDOWN:
-        #     if start_button.is_clicked(event.pos):
-        #         print("Start Game Clicked")  # later → switch to game state
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if start_btn.is_clicked(mouse_pos):
+                print("START clicked")
 
-        #     if quit_button.is_clicked(event.pos):
-                # pygame.quit()
-                # sys.exit()
+            elif about_btn.is_clicked(mouse_pos):
+                print("ABOUT clicked")
+
+            elif help_btn.is_clicked(mouse_pos):
+                print("HELP clicked")
+
+            elif quit_btn.is_clicked(mouse_pos):
+                pygame.quit()
+                sys.exit()
 
     pygame.display.update()
+    clock.tick(60)
 
 pygame.quit()
 sys.exit()
