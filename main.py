@@ -1,136 +1,64 @@
 import pygame
 import sys
 
-# --- Config ---
-WIDTH = 600
-HEIGHT = 650   # extra space for UI text
-ROWS = 20
-COLS = 20
-CELL_SIZE = WIDTH // COLS
-
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (200, 200, 200)
-GREEN = (0, 200, 0)   # Start
-RED = (200, 0, 0)     # Goal
-BLUE = (50, 50, 255)  # UI text
-
-# --- Initialize ---
+# --- Init ---
 pygame.init()
+WIDTH, HEIGHT = 1000, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Dead Defenders - Phase 2")
-font = pygame.font.SysFont(None, 36)
-big_font = pygame.font.SysFont(None, 60)
+pygame.display.set_caption("🧟‍♀️ Dead Defenders 🧟‍♀️")
 
-# --- Grid Data ---
-grid = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+# --- Load Images ---
+background = pygame.image.load("images\homepage/background.PNG")
+background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 
-start_pos = None
-goal_pos = None
+# start_img = pygame.image.load("assets/start_btn.png").convert_alpha()
+# quit_img = pygame.image.load("assets/quit_btn.png").convert_alpha()
 
-# --- Game State ---
-MENU = 0
-PLAYING = 1
-state = MENU
+# # Resize buttons (adjust if needed)
+# start_img = pygame.transform.scale(start_img, (200, 80))
+# quit_img = pygame.transform.scale(quit_img, (200, 80))
 
 
-# --- Functions ---
-def draw_grid():
-    for row in range(ROWS):
-        for col in range(COLS):
-            x = col * CELL_SIZE
-            y = row * CELL_SIZE
+# --- Button Class ---
+class Button:
+    def __init__(self, image, x, y):
+        self.image = image
+        self.rect = self.image.get_rect(topleft=(x, y))
 
-            color = WHITE
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
 
-            if grid[row][col] == 1:
-                color = BLACK
-
-            if start_pos == (row, col):
-                color = GREEN
-
-            if goal_pos == (row, col):
-                color = RED
-
-            pygame.draw.rect(screen, color, (x, y, CELL_SIZE, CELL_SIZE))
-            pygame.draw.rect(screen, GRAY, (x, y, CELL_SIZE, CELL_SIZE), 1)
+    def is_clicked(self, pos):
+        return self.rect.collidepoint(pos)
 
 
-def get_cell_pos(mouse_pos):
-    x, y = mouse_pos
-    row = y // CELL_SIZE
-    col = x // CELL_SIZE
-    return row, col
-
-
-def draw_ui():
-    text = font.render("S: Start | G: Goal | Click: Wall | SPACE: Menu", True, BLUE)
-    screen.blit(text, (10, HEIGHT - 40))
-
-
-def draw_menu():
-    screen.fill(WHITE)
-
-    title = big_font.render("Dead Defenders", True, BLACK)
-    subtitle = font.render("Press SPACE to Start", True, BLUE)
-
-    screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 3))
-    screen.blit(subtitle, (WIDTH // 2 - subtitle.get_width() // 2, HEIGHT // 2))
-
-    pygame.display.flip()
+# # --- Create Buttons (RIGHT SIDE) ---
+# start_button = Button(start_img, WIDTH - 250, 200)
+# quit_button = Button(quit_img, WIDTH - 250, 320)
 
 
 # --- Main Loop ---
 running = True
 while running:
+    screen.blit(background, (0, 0))
 
-    if state == MENU:
-        draw_menu()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    state = PLAYING
-
-        continue
-
-    # --- Game Screen ---
-    screen.fill(WHITE)
+    # # Draw buttons
+    # start_button.draw(screen)
+    # quit_button.draw(screen)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    keys = pygame.key.get_pressed()
+        # if event.type == pygame.MOUSEBUTTONDOWN:
+        #     if start_button.is_clicked(event.pos):
+        #         print("Start Game Clicked")  # later → switch to game state
 
-    if pygame.mouse.get_pressed()[0]:
-        pos = pygame.mouse.get_pos()
-        row, col = get_cell_pos(pos)
+        #     if quit_button.is_clicked(event.pos):
+                # pygame.quit()
+                # sys.exit()
 
-        if 0 <= row < ROWS and 0 <= col < COLS:
-
-            # Place START
-            if keys[pygame.K_s]:
-                start_pos = (row, col)
-
-            # Place GOAL
-            elif keys[pygame.K_g]:
-                goal_pos = (row, col)
-
-            # Toggle WALL
-            else:
-                if (row, col) != start_pos and (row, col) != goal_pos:
-                    grid[row][col] = 1 if grid[row][col] == 0 else 0
-
-    # Draw everything
-    draw_grid()
-    draw_ui()
-
-    pygame.display.flip()
+    pygame.display.update()
 
 pygame.quit()
 sys.exit()
