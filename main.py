@@ -1,5 +1,7 @@
 import pygame
 import sys
+from about_screen import run_about_screen
+
 
 # --- Init ---
 pygame.init()
@@ -110,7 +112,7 @@ while running:
                 print("START clicked")
 
             elif about_btn.is_clicked(mouse_pos):
-                print("ABOUT clicked")
+                run_about_screen(screen)
 
             elif help_btn.is_clicked(mouse_pos):
                 print("HELP clicked")
