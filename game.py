@@ -1,27 +1,22 @@
 import pygame
 from path_finding import a_star, heuristic, get_neighbors
+from grid_generator import generate_smart_grid
+import random
 
 
 
 def run_game(screen):
     clock = pygame.time.Clock()
 
-    grid= [
-    [0, 0, 0, 0, 0],
-    [0, 1, 1, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 1, 1, 0],
-    [0, 0, 1, 1, 0]
-    
-    ]
+    grid, player, goal,zombies=generate_smart_grid(10 , 10)
 
-    player = [0,0]
-    goal = (4,4)
-    zombie = [0,4]
-    tile_size = 80
+    player=list(player)
+    zombies =[list(z) for z in zombies] 
+    tile_size = 50
 
-    zombie_delay = 500   #milliseconds (adjust this)
-    last_zombie_move = pygame.time.get_ticks()
+    # zombie_delay=[150, 200, 300]
+    zombie_delays = [950, 700, 600]   # staggered delays
+    last_move_times = [pygame.time.get_ticks() for _ in zombies]
 
     running = True
     while running:
@@ -54,21 +49,24 @@ def run_game(screen):
                     running=False
 
         #zombie pathfinding
-       
+
         current_time = pygame.time.get_ticks()
 
-        if current_time - last_zombie_move > zombie_delay:
-            
-            path = a_star(grid, tuple(zombie), tuple(player))
+        for i, zombie in enumerate(zombies):
 
-            if path and len(path) > 1:
-                zombie[0], zombie[1] = path[1]
+            if current_time - last_move_times[i] > zombie_delays[i]:
 
-            last_zombie_move = current_time
+                path = a_star(grid, tuple(zombie), tuple(player))
 
-        if zombie == player:
-            print("U dead")
-            running=False
+                if path and len(path) > 1:
+                    zombie[0], zombie[1] = path[1]
+
+                last_move_times[i] = current_time
+
+        for zombie in zombies:
+            if zombie == player:
+                print("U dead")
+                running=False
 
 
         #draw grid
@@ -84,12 +82,13 @@ def run_game(screen):
                     (x * tile_size, y * tile_size, tile_size, tile_size)
                 )
         
-        #draw zombie
-        pygame.draw.rect(
-            screen,
-            (255, 0, 0),
-            (zombie[0] * tile_size, zombie[1] * tile_size, tile_size, tile_size)
-        )
+        #draw zombies
+        for zombie in zombies:
+            pygame.draw.rect(
+                screen,
+                (255, 0, 0),
+                (zombie[0] * tile_size, zombie[1] * tile_size, tile_size, tile_size)
+            )
         #draw player
         pygame.draw.rect(
             screen,
