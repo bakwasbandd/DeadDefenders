@@ -8,7 +8,7 @@ from end_screen import show_end_screen
 def run_game(screen):
     clock = pygame.time.Clock()
 
-    ROWS, COLS = 10, 10
+    ROWS, COLS = 15, 15
     TILE_SIZE = 50
 
     # --- Generate Grid (walls included) ---
@@ -21,7 +21,7 @@ def run_game(screen):
     zombie_delay = 700
     last_zombie_move = pygame.time.get_ticks()
 
-    agent_delay = 450   # slower agent
+    agent_delay = 450   # slower agent ----or faster?? -usaid
     last_agent_move = pygame.time.get_ticks()
 
     path = []
@@ -74,7 +74,7 @@ def run_game(screen):
             if z == agent:
                 print("Agent died")
 
-                result = show_end_screen(screen, "GAME OVER")
+                result = show_end_screen(screen, "GAME OVER\bYOU DIED")
 
                 if result == "retry":
                     return run_game(screen)
