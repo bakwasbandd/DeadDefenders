@@ -2,23 +2,7 @@ import pygame
 import random
 from path_finding import a_star
 from grid_generator import generate_smart_grid
-
-
-def show_end_screen(screen, text):
-    font = pygame.font.SysFont(None, 72)
-
-    overlay = pygame.Surface(screen.get_size())
-    overlay.set_alpha(180)
-    overlay.fill((0, 0, 0))
-
-    label = font.render(text, True, (255, 255, 255))
-    rect = label.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
-
-    screen.blit(overlay, (0, 0))
-    screen.blit(label, rect)
-    pygame.display.update()
-
-    pygame.time.delay(3000)  # 3 sec pause
+from end_screen import show_end_screen
 
 
 def run_game(screen):
@@ -27,7 +11,7 @@ def run_game(screen):
     ROWS, COLS = 10, 10
     TILE_SIZE = 50
 
-    # --- Grid ---
+    # --- Generate Grid (walls included) ---
     grid, start, goal, zombies = generate_smart_grid(ROWS, COLS)
 
     agent = list(start)
@@ -37,8 +21,7 @@ def run_game(screen):
     zombie_delay = 700
     last_zombie_move = pygame.time.get_ticks()
 
-    # 🔻 SLOWER AGENT HERE
-    agent_delay = 400
+    agent_delay = 450   # slower agent
     last_agent_move = pygame.time.get_ticks()
 
     path = []
@@ -47,27 +30,28 @@ def run_game(screen):
     while running:
         screen.fill((30, 30, 30))
 
+        # --- EVENTS ---
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
 
         current_time = pygame.time.get_ticks()
 
-        # --- Temp Grid ---
+        # --- TEMP GRID (walls + zombies) ---
         temp_grid = [row[:] for row in grid]
         for z in zombies:
             temp_grid[z[1]][z[0]] = 1
 
-        # --- A* ---
+        # --- A* PATH ---
         path = a_star(temp_grid, tuple(agent), goal)
 
-        # --- Move Agent ---
+        # --- MOVE AGENT ---
         if path and len(path) > 1:
             if current_time - last_agent_move > agent_delay:
                 agent[0], agent[1] = path[1]
                 last_agent_move = current_time
 
-        # --- Move Zombies ---
+        # --- MOVE ZOMBIES ---
         if current_time - last_zombie_move > zombie_delay:
             for z in zombies:
                 zx, zy = z
@@ -89,21 +73,32 @@ def run_game(screen):
         for z in zombies:
             if z == agent:
                 print("Agent died")
-                show_end_screen(screen, "GAME OVER")
-                return
+
+                result = show_end_screen(screen, "GAME OVER")
+
+                if result == "retry":
+                    return run_game(screen)
+                else:
+                    return
 
         # --- CHECK GOAL ---
         if tuple(agent) == goal:
             print("Goal reached!")
-            show_end_screen(screen, "YOU WIN")
-            return
+
+            result = show_end_screen(screen, "YOU WIN")
+
+            if result == "retry":
+                return run_game(screen)
+            else:
+                return
 
         # --- DRAW GRID ---
         for y in range(ROWS):
             for x in range(COLS):
                 color = (200, 200, 200)
+
                 if grid[y][x] == 1:
-                    color = (0, 0, 0)
+                    color = (0, 0, 0)  # WALL
 
                 pygame.draw.rect(
                     screen,
@@ -127,14 +122,14 @@ def run_game(screen):
                     (node[0]*TILE_SIZE, node[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE)
                 )
 
-        # --- GOAL ---
+        # --- DRAW GOAL ---
         pygame.draw.rect(
             screen,
             (0, 255, 0),
             (goal[0]*TILE_SIZE, goal[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE)
         )
 
-        # --- ZOMBIES ---
+        # --- DRAW ZOMBIES ---
         for z in zombies:
             pygame.draw.rect(
                 screen,
@@ -142,7 +137,7 @@ def run_game(screen):
                 (z[0]*TILE_SIZE, z[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE)
             )
 
-        # --- AGENT ---
+        # --- DRAW AGENT ---
         pygame.draw.rect(
             screen,
             (0, 0, 255),
