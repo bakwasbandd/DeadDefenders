@@ -1,6 +1,7 @@
 import pygame
 import sys
 from about_screen import run_about_screen
+from game import run_game
 
 
 # --- Init ---
@@ -110,6 +111,7 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if start_btn.is_clicked(mouse_pos):
                 print("START clicked")
+                run_game(screen)
 
             elif about_btn.is_clicked(mouse_pos):
                 run_about_screen(screen)
