@@ -26,13 +26,14 @@ def run_game(screen):
     clock = pygame.time.Clock()
 
     ROWS, COLS = 15, 15
-    TILE_SIZE = 40
-
-    GRID_WIDTH = COLS * TILE_SIZE
-    UI_X = GRID_WIDTH + 20
+    TILE_SIZE = 55
 
     MIN_ZOMBIE_DELAY = 500
     MAX_ZOMBIE_DELAY = 700
+
+    # --- Spawn cooldown ---
+    zombie_spawn_cooldown = 5000
+    last_spawn_time = 0
 
     # --- Generate Grid ---
     grid, _, _, zombies = generate_smart_grid(ROWS, COLS)
@@ -55,8 +56,6 @@ def run_game(screen):
 
     agent_delay = 500
     last_agent_move = current_time
-
-    font = pygame.font.SysFont(None, 26)
 
     path = []
 
@@ -87,23 +86,24 @@ def run_game(screen):
 
                     else:
                         if keys[pygame.K_z]:
-                            occupied = {tuple(agent), goal}
-                            occupied.update(tuple(z["pos"]) for z in zombies)
+                            if current_time - last_spawn_time >= zombie_spawn_cooldown:
 
-                            if grid[y][x] == 0 and (x, y) not in occupied:
-                                zombies.append({
-                                    "pos": [x, y],
-                                    "delay": random.randint(MIN_ZOMBIE_DELAY, MAX_ZOMBIE_DELAY),
-                                    "last_move": pygame.time.get_ticks(),
-                                })
+                                occupied = {tuple(agent), goal}
+                                occupied.update(tuple(z["pos"]) for z in zombies)
+
+                                if grid[y][x] == 0 and (x, y) not in occupied:
+                                    zombies.append({
+                                        "pos": [x, y],
+                                        "delay": random.randint(MIN_ZOMBIE_DELAY, MAX_ZOMBIE_DELAY),
+                                        "last_move": pygame.time.get_ticks(),
+                                    })
+                                    last_spawn_time = current_time
 
             if event.type == pygame.KEYDOWN:
                 if placing_mode and event.key == pygame.K_RETURN:
                     if start and goal:
                         agent = list(start)
                         placing_mode = False
-                    else:
-                        print("Set Start and Goal first")
 
         current_time = pygame.time.get_ticks()
 
@@ -124,7 +124,6 @@ def run_game(screen):
             if current_time - last_agent_move > agent_delay:
                 agent[0], agent[1] = path[1]
                 last_agent_move = current_time
-        # ❗ If path is None → agent waits (no movement)
 
         # ================= MOVE ZOMBIES =================
         if not placing_mode:
@@ -200,33 +199,6 @@ def run_game(screen):
         if agent:
             pygame.draw.rect(screen, (255,255,0),
                              (agent[0]*TILE_SIZE, agent[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE))
-
-        # ================= UI PANEL =================
-        pygame.draw.rect(screen, (20,20,20),
-                         (GRID_WIDTH, 0, 300, ROWS*TILE_SIZE))
-
-        if placing_mode:
-            lines = [
-                "SETUP MODE",
-                "",
-                "S + Click: Set Start",
-                "G + Click: Set Goal",
-                "",
-                "ENTER: Start"
-            ]
-        else:
-            lines = [
-                "GAME MODE",
-                "",
-                "Z + Click: Add Zombie",
-                "",
-                f"Zombies: {len(zombies)}",
-                "Agent waits if path blocked"
-            ]
-
-        for i, line in enumerate(lines):
-            text = font.render(line, True, (255,255,255))
-            screen.blit(text, (UI_X, 30 + i*30))
 
         pygame.display.update()
         clock.tick(60)
