@@ -6,6 +6,11 @@ class UIRenderer:
     def __init__(self, tile_size):
         self.TILE_SIZE = tile_size
 
+        self.wall_img = pygame.image.load("images/walls.png").convert_alpha()
+        self.wall_img = pygame.transform.scale(
+            self.wall_img, (tile_size, tile_size)
+        )
+
         # --- Load Agent Sprite ---
         self.agent_img = pygame.image.load("images/agent/lul.png").convert_alpha()
         self.agent_img = pygame.transform.scale(
@@ -32,16 +37,11 @@ class UIRenderer:
     def draw_grid(self, screen, grid):
         for y in range(len(grid)):
             for x in range(len(grid[0])):
-                color = (200, 200, 200)
                 if grid[y][x] == 1:
-                    color = (0, 0, 0)
-
-                pygame.draw.rect(
-                    screen,
-                    color,
-                    (x*self.TILE_SIZE, y*self.TILE_SIZE,
-                     self.TILE_SIZE, self.TILE_SIZE)
-                )
+                    screen.blit(
+                        self.wall_img,
+                        (x*self.TILE_SIZE, y*self.TILE_SIZE)
+                    )
 
                 pygame.draw.rect(
                     screen,

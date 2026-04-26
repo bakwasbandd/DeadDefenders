@@ -33,8 +33,14 @@ def run_game(screen):
 
     renderer = UIRenderer(TILE_SIZE)
 
-    grass_img = pygame.image.load("images/grass.jpeg").convert_alpha()
-    grass_img = pygame.transform.smoothscale(grass_img, (TILE_SIZE, TILE_SIZE))
+    bg_img = pygame.image.load("images/grass2.png").convert()
+    bg_img = pygame.transform.smoothscale(bg_img, screen.get_size())
+
+    ground_tile_img = pygame.image.load("images/grass5.png").convert_alpha()
+    ground_tile_img = pygame.transform.smoothscale(
+        ground_tile_img, (TILE_SIZE, TILE_SIZE)
+    )
+
 
     visited_path = set()
 
@@ -70,7 +76,8 @@ def run_game(screen):
 
     running = True
     while running:
-        screen.fill((30, 30, 30))
+        screen.blit(bg_img, (0, 0))
+
         mouse_pos = pygame.mouse.get_pos()
         keys = pygame.key.get_pressed()
 
@@ -180,7 +187,7 @@ def run_game(screen):
 
         # --- Draw Grass Trail (PAST) ---
         for node in visited_path:
-            screen.blit(grass_img, (node[0]*TILE_SIZE, node[1]*TILE_SIZE))
+            screen.blit(ground_tile_img, (node[0]*TILE_SIZE, node[1]*TILE_SIZE))
 
         # --- Draw Future Path (CYAN, semi-transparent) ---
         if path:
