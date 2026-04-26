@@ -33,6 +33,11 @@ def run_game(screen):
 
     renderer = UIRenderer(TILE_SIZE)
 
+    grass_img = pygame.image.load("images/grass.jpeg").convert_alpha()
+    grass_img = pygame.transform.smoothscale(grass_img, (TILE_SIZE, TILE_SIZE))
+
+    visited_path = set()
+
     MIN_ZOMBIE_DELAY = 500
     MAX_ZOMBIE_DELAY = 700
 
@@ -48,7 +53,6 @@ def run_game(screen):
 
     current_time = pygame.time.get_ticks()
 
-    # ✅ Attach random sprite to each zombie
     zombies = [
         {
             "pos": [z[0], z[1]],
@@ -127,6 +131,9 @@ def run_game(screen):
         # ================= MOVE AGENT =================
         if not placing_mode and path and len(path) > 1:
             if current_time - last_agent_move > agent_delay:
+                # ✅ Leave grass behind
+                visited_path.add((agent[0], agent[1]))
+
                 agent[0], agent[1] = path[1]
                 last_agent_move = current_time
 
@@ -171,9 +178,22 @@ def run_game(screen):
         # ================= DRAW =================
         renderer.draw_grid(screen, grid)
 
-        if path:
-            renderer.draw_path(screen, path)
+        # --- Draw Grass Trail (PAST) ---
+        for node in visited_path:
+            screen.blit(grass_img, (node[0]*TILE_SIZE, node[1]*TILE_SIZE))
 
+        # --- Draw Future Path (CYAN, semi-transparent) ---
+        if path:
+            for node in path:
+                # Skip current agent position so it doesn’t cover it
+                if tuple(agent) == node:
+                    continue
+
+                s = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                s.fill((0, 255, 255, 80))  # transparency (adjust 60–120)
+                screen.blit(s, (node[0]*TILE_SIZE, node[1]*TILE_SIZE))
+
+        # --- Draw Entities ---
         renderer.draw_start_goal(screen, start, goal)
         renderer.draw_zombies(screen, zombies)
         renderer.draw_agent(screen, agent)
