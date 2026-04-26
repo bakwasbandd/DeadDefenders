@@ -4,6 +4,23 @@ from path_finding import a_star
 from grid_generator import generate_smart_grid
 from end_screen import show_end_screen
 
+def show_collision_pause(screen, agent_pos, TILE_SIZE):
+    overlay = pygame.Surface(screen.get_size())
+    overlay.set_alpha(120)
+    overlay.fill((0, 0, 0))
+
+    # highlight collision tile (yellow flash)
+    pygame.draw.rect(
+        screen,
+        (255, 255, 0),
+        (agent_pos[0]*TILE_SIZE, agent_pos[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+    )
+
+    screen.blit(overlay, (0, 0))
+    pygame.display.update()
+
+    pygame.time.delay(800)  
+
 
 def run_game(screen):
     clock = pygame.time.Clock()
@@ -139,6 +156,8 @@ def run_game(screen):
         if not placing_mode:
             for z in zombies:
                 if z["pos"] == agent:
+                    # show collision moment first
+                    show_collision_pause(screen, agent, TILE_SIZE)
                     result = show_end_screen(screen, "GAME OVER")
                     return run_game(screen) if result == "retry" else None
 
