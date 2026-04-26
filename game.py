@@ -4,12 +4,13 @@ from path_finding import a_star
 from grid_generator import generate_smart_grid
 from end_screen import show_end_screen
 
+
+# --- Collision Pause ---
 def show_collision_pause(screen, agent_pos, TILE_SIZE):
     overlay = pygame.Surface(screen.get_size())
     overlay.set_alpha(120)
     overlay.fill((0, 0, 0))
 
-    # highlight collision tile (yellow flash)
     pygame.draw.rect(
         screen,
         (255, 255, 0),
@@ -18,8 +19,7 @@ def show_collision_pause(screen, agent_pos, TILE_SIZE):
 
     screen.blit(overlay, (0, 0))
     pygame.display.update()
-
-    pygame.time.delay(800)  
+    pygame.time.delay(800)
 
 
 def run_game(screen):
@@ -34,10 +34,9 @@ def run_game(screen):
     MIN_ZOMBIE_DELAY = 500
     MAX_ZOMBIE_DELAY = 700
 
-    # --- Generate Grid (walls only used) ---
+    # --- Generate Grid ---
     grid, _, _, zombies = generate_smart_grid(ROWS, COLS)
 
-    # --- Placement Mode ---
     placing_mode = True
     start = None
     goal = None
@@ -78,7 +77,6 @@ def run_game(screen):
 
                 if 0 <= x < COLS and 0 <= y < ROWS:
 
-                    # ---------- PLACEMENT MODE ----------
                     if placing_mode:
                         if grid[y][x] == 0:
                             if keys[pygame.K_s]:
@@ -87,7 +85,6 @@ def run_game(screen):
                             elif keys[pygame.K_g]:
                                 goal = (x, y)
 
-                    # ---------- GAMEPLAY MODE ----------
                     else:
                         if keys[pygame.K_z]:
                             occupied = {tuple(agent), goal}
@@ -110,12 +107,13 @@ def run_game(screen):
 
         current_time = pygame.time.get_ticks()
 
-        # ================= PATH =================
+        # ================= TEMP GRID =================
         temp_grid = [row[:] for row in grid]
         for z in zombies:
             zx, zy = z["pos"]
             temp_grid[zy][zx] = 1
 
+        # ================= PATH =================
         if not placing_mode and start and goal:
             path = a_star(temp_grid, tuple(agent), goal)
         else:
@@ -126,6 +124,7 @@ def run_game(screen):
             if current_time - last_agent_move > agent_delay:
                 agent[0], agent[1] = path[1]
                 last_agent_move = current_time
+        # ❗ If path is None → agent waits (no movement)
 
         # ================= MOVE ZOMBIES =================
         if not placing_mode:
@@ -152,16 +151,16 @@ def run_game(screen):
 
                 z["last_move"] = current_time
 
-        # ================= CHECK END =================
+        # ================= CHECK COLLISION =================
         if not placing_mode:
             for z in zombies:
                 if z["pos"] == agent:
-                    # show collision moment first
                     show_collision_pause(screen, agent, TILE_SIZE)
                     result = show_end_screen(screen, "GAME OVER")
                     return run_game(screen) if result == "retry" else None
 
             if tuple(agent) == goal:
+                pygame.time.delay(600)
                 result = show_end_screen(screen, "YOU WIN")
                 return run_game(screen) if result == "retry" else None
 
@@ -178,9 +177,10 @@ def run_game(screen):
                                  (x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE), 1)
 
         # ================= DRAW PATH =================
-        for node in path:
-            pygame.draw.rect(screen, (0,255,255),
-                             (node[0]*TILE_SIZE, node[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE))
+        if path:
+            for node in path:
+                pygame.draw.rect(screen, (0,255,255),
+                                 (node[0]*TILE_SIZE, node[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE))
 
         # ================= DRAW START / GOAL =================
         if start:
@@ -212,7 +212,7 @@ def run_game(screen):
                 "S + Click: Set Start",
                 "G + Click: Set Goal",
                 "",
-                "Press ENTER to begin"
+                "ENTER: Start"
             ]
         else:
             lines = [
@@ -220,7 +220,8 @@ def run_game(screen):
                 "",
                 "Z + Click: Add Zombie",
                 "",
-                f"Zombies: {len(zombies)}"
+                f"Zombies: {len(zombies)}",
+                "Agent waits if path blocked"
             ]
 
         for i, line in enumerate(lines):
