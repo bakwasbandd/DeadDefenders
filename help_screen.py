@@ -60,7 +60,7 @@ def run_help_screen(screen):
 
     back_button = ImageButton(
         "images/aboutGame/home.png",
-        (115, height - 80),
+        (500, height - 60),
         (180, 90)
     )
 
