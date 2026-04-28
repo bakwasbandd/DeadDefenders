@@ -2,6 +2,7 @@ import pygame
 import sys
 from about_screen import run_about_screen
 from game import run_game
+from help_screen import run_help_screen
 
 
 # --- Init ---
@@ -117,7 +118,7 @@ while running:
                 run_about_screen(screen)
 
             elif help_btn.is_clicked(mouse_pos):
-                print("HELP clicked")
+                run_help_screen(screen)
 
             elif quit_btn.is_clicked(mouse_pos):
                 running = False
