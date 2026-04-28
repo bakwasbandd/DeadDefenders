@@ -28,7 +28,7 @@ def show_collision_pause(screen, agent_pos, TILE_SIZE):
 def run_game(screen):
     clock = pygame.time.Clock()
 
-    ROWS, COLS = 15, 15
+    ROWS, COLS = 10, 15
     TILE_SIZE = 60
 
     renderer = UIRenderer(TILE_SIZE)
@@ -44,10 +44,10 @@ def run_game(screen):
 
     visited_path = set()
 
-    MIN_ZOMBIE_DELAY = 500
-    MAX_ZOMBIE_DELAY = 700
+    MIN_ZOMBIE_DELAY = 750
+    MAX_ZOMBIE_DELAY = 950
 
-    zombie_spawn_cooldown = 5000
+    zombie_spawn_cooldown = 2000
     last_spawn_time = 0
 
     grid, _, _, zombies = generate_smart_grid(ROWS, COLS)
@@ -69,7 +69,7 @@ def run_game(screen):
         for z in zombies
     ]
 
-    agent_delay = 500
+    agent_delay = 700
     last_agent_move = current_time
 
     path = []
@@ -173,6 +173,13 @@ def run_game(screen):
         if not placing_mode:
             for z in zombies:
                 if z["pos"] == agent:
+                    renderer.draw_grid(screen, grid)
+                    renderer.draw_start_goal(screen, start, goal)
+                    renderer.draw_zombies(screen, zombies)
+                    renderer.draw_agent(screen, agent)
+                    pygame.display.update()
+
+                    pygame.time.delay(2000)
                     show_collision_pause(screen, agent, TILE_SIZE)
                     result = show_end_screen(screen, "GAME OVER")
                     return run_game(screen) if result == "retry" else None
