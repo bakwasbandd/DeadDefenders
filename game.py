@@ -138,7 +138,7 @@ def run_game(screen):
         # ================= MOVE AGENT =================
         if not placing_mode and path and len(path) > 1:
             if current_time - last_agent_move > agent_delay:
-                # ✅ Leave grass behind
+                # Leave grass behind
                 visited_path.add((agent[0], agent[1]))
 
                 agent[0], agent[1] = path[1]
@@ -192,12 +192,12 @@ def run_game(screen):
         # --- Draw Future Path (CYAN, semi-transparent) ---
         if path:
             for node in path:
-                # Skip current agent position so it doesn’t cover it
+                # Skip current agent position so it doesn't cover it
                 if tuple(agent) == node:
                     continue
 
                 s = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
-                s.fill((0, 255, 255, 80))  # transparency (adjust 60–120)
+                s.fill((0, 255, 255, 80))  # transparency (adjust 60-120)
                 screen.blit(s, (node[0]*TILE_SIZE, node[1]*TILE_SIZE))
 
         # --- Draw Entities ---
